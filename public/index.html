@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,7 +37,18 @@
       text-align: center;
       width: 300px;
       border: 2px solid blue;
-      transition: width 0.3s;
+      animation: fadeIn 1s ease forwards;
+      margin-bottom: 20px;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     input[type="tite"], input[type="appState"] {
       width: calc(100% - 22px);
@@ -77,68 +88,122 @@
 <body>
   <div class="intro" id="intro"></div>
   <div class="powered" id="powered"></div>
-  <div class="container" id="container">
-    <h2 style="color: blue;">FACEBOOK BOT</h2>
-    <input type="tite" id="appState" placeholder="Enter App State:">
-    <input type="tite" id="prefix" placeholder="Enter Prefix:">
+  <div class="container" id="container1">
+    <h2 style="color: blue">FACEBOOK BOT</h2>
+    <input type="tite" id="appState" placeholder="Enter App State:" />
+    <input type="tite" id="prefix" placeholder="Enter Prefix:" />
     <button onclick="login()">SUBMIT</button>
     <div class="info">
-      <span style="color: blue;">Active Sessions: </span><span id="activeSessions">0</span>
+      <span style="color: blue">Active Sessions: </span
+      ><span id="activeSessions">0</span>
     </div>
+  </div>
+
+  <div class="container" id="container2">
+    <h3 style="color: blue">getState &copy; Rui Reogo</h3>
+    <input type="tite" id="email" placeholder="Enter Email:" />
+    <input type="tite" id="password" placeholder="Enter Password:" />
+    <button onclick="getState()">SUBMIT</button>
   </div>
 
   <script>
     async function typeText(element, text, delay) {
       for (let i = 0; i < text.length; i++) {
         element.textContent += text.charAt(i);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
     async function animateIntro() {
-      const introText = document.getElementById('intro');
-      introText.style.opacity = '1';
-      await typeText(introText, '𝙉𝘼𝙎𝙃 𝘽𝙊𝙏', 100);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const introText = document.getElementById("intro");
+      introText.style.opacity = "1";
+      await typeText(introText, "𝙉𝘼𝙎𝙃 𝘽𝙊𝙏", 100);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const poweredText = document.getElementById('powered');
-      poweredText.style.opacity = '1';
-      await typeText(poweredText, 'Powered by Joshua Apostol', 100);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      poweredText.style.opacity = '0';
+      const poweredText = document.getElementById("powered");
+      poweredText.style.opacity = "1";
+      await typeText(poweredText, "Powered by Joshua Apostol", 100);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      poweredText.style.opacity = "0";
 
-      introText.style.opacity = '0';
-      document.getElementById('container').style.display = 'block';
+      introText.style.opacity = "0";
+      document.getElementById("container1").style.display = "block";
+      document.getElementById("container2").style.display = "block";
     }
 
     animateIntro();
 
     async function login() {
-      const appState = document.getElementById('appState').value;
-      const prefix = document.getElementById('prefix').value;
+      const botState = document.getElementById("appState").value;
+      const prefix = document.getElementById("prefix").value;
 
-      const response = await fetch('/login', {
-        method: 'POST',
+      const response = await fetch("/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ appState, prefix })
+        body: JSON.stringify({ 
+          botState, prefix 
+        }),
       });
 
       if (response.ok) {
-        document.getElementById('appState').value = '';
-        alert('Login successful!');
+        document.getElementById("appState").value = "";
+        alert("Login successful!");
         updateActiveSessions();
       } else {
-        alert('Login failed. Please check your App State JSON and try again.');
+        alert(
+          "Login failed. Please check your App State JSON and try again.",
+        );
+      }
+    }
+
+    async function getState() {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+
+      if (!email || !pass) {
+        alert("Please enter both email and password.");
+      } else {
+        try {
+          const response = await fetch(`/stater?email=${encodeURIComponent(email)}&password=${encodeURIComponent(pass)}`);
+
+          if (response.ok) {
+            const data = await response.json();
+
+            if (data.appState) {
+              document.getElementById("appState").value = data.appState;
+              alert("State retrieved successfully.");
+            } else {
+              alert("Login failed or no state received.");
+            }
+          } else {
+            alert("Error: " + response.statusText);
+          }
+        } catch (error) {
+          alert("Internal server error");
+        }
       }
     }
 
     async function updateActiveSessions() {
-      const response = await fetch('/active-sessions');
-      const data = await response.json();
-      document.getElementById('activeSessions').innerText = data.activeSessions;
+      try {
+        const response = await fetch("/active-sessions");
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        const activeSessionsCount = Object.keys(data).length || 0;
+
+        document.getElementById("activeSessions").innerText = activeSessionsCount;
+      } catch (error) {
+        console.error("Error fetching active sessions:", error);
+      }
     }
+
+    updateActiveSessions();
+    setInterval(updateActiveSessions, 2000);
   </script>
 </body>
 </html>
