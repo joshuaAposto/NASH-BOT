@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FACEBOOK BOT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url("https://media4.giphy.com/media/jaOXKCxtBPLieRLI0c/giphy.gif?cid=6c09b952uys1wv9s8v4hnc7dbo339rgcjiunfvyovq9u6m5n&ep=v1_internal_gif_by_");
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .intro {
+      color: blue;
+      font-size: 24px;
+      text-align: center;
+      opacity: 0;
+    }
+    .powered {
+      color: blue;
+      font-size: 14px;
+      text-align: center;
+      opacity: 0;
+    }
+    .container {
+      display: none;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+      border: 2px solid blue;
+      transition: width 0.3s;
+    }
+    input[type="tite"], input[type="appState"] {
+      width: calc(100% - 22px);
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+    }
+    button {
+      width: calc(100% - 22px);
+      padding: 10px;
+      background-color: #1877f2;
+      border: none;
+      border-radius: 20px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #155db1;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    @media (min-width: 768px) {
+      .container {
+        width: 400px;
+        border-width: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="intro" id="intro"></div>
+  <div class="powered" id="powered"></div>
+  <div class="container" id="container">
+    <h2 style="color: blue;">FACEBOOK BOT</h2>
+    <input type="tite" id="appState" placeholder="Enter App State:">
+    <input type="tite" id="prefix" placeholder="Enter Prefix:">
+    <button onclick="login()">SUBMIT</button>
+    <div class="info">
+      <span style="color: blue;">Active Sessions: </span><span id="activeSessions">0</span>
+    </div>
+  </div>
+
+  <script>
+    async function typeText(element, text, delay) {
+      for (let i = 0; i < text.length; i++) {
+        element.textContent += text.charAt(i);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    async function animateIntro() {
+      const introText = document.getElementById('intro');
+      introText.style.opacity = '1';
+      await typeText(introText, '𝙉𝘼𝙎𝙃 𝘽𝙊𝙏', 100);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const poweredText = document.getElementById('powered');
+      poweredText.style.opacity = '1';
+      await typeText(poweredText, 'Powered by Joshua Apostol', 100);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      poweredText.style.opacity = '0';
+
+      introText.style.opacity = '0';
+      document.getElementById('container').style.display = 'block';
+    }
+
+    animateIntro();
+
+    async function login() {
+      const appState = document.getElementById('appState').value;
+      const prefix = document.getElementById('prefix').value;
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ appState, prefix })
+      });
+
+      if (response.ok) {
+        document.getElementById('appState').value = '';
+        alert('Login successful!');
+        updateActiveSessions();
+      } else {
+        alert('Login failed. Please check your App State JSON and try again.');
+      }
+    }
+
+    async function updateActiveSessions() {
+      const response = await fetch('/active-sessions');
+      const data = await response.json();
+      document.getElementById('activeSessions').innerText = data.activeSessions;
+    }
+  </script>
+</body>
+</html>
